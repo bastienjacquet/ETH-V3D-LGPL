@@ -149,4 +149,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact
 -------
 
-Christopher Zach <http://www.inf.ethz.ch/personal/chzach>
+Christopher Zach <http://www.cvg.ethz.ch/research/chzach>
