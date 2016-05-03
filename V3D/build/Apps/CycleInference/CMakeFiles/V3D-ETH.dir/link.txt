@@ -1,2 +1,0 @@
-/usr/bin/ar cr libV3D-ETH.a  CMakeFiles/V3D-ETH.dir/inference_common.cpp.o CMakeFiles/V3D-ETH.dir/cycle_inference.cpp.o
-/usr/bin/ranlib libV3D-ETH.a

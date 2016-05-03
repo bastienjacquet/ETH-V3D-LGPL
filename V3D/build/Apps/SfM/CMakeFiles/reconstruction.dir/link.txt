@@ -1,2 +1,0 @@
-/usr/bin/ar cr libreconstruction.a  CMakeFiles/reconstruction.dir/reconstruction_common.cpp.o CMakeFiles/reconstruction.dir/reconstruction_common2.cpp.o
-/usr/bin/ranlib libreconstruction.a
