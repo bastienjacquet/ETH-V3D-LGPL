@@ -1,0 +1,50 @@
+float thresholdingStep(float a2, float b, float lambda)
+{
+   float lam_a2 = lambda * a2;
+   return (b + lam_a2 < 0) ? lambda : ((b - lam_a2 > 0) ? -lambda : (-b/a2));
+}
+
+void main(uniform sampler2D u_src      : TEXUNIT0,
+          uniform sampler2D warped_tex : TEXUNIT1, // (It, Ix, Iy)
+          uniform sampler2D qh_tex     : TEXUNIT2,
+          uniform sampler2D qv_tex     : TEXUNIT3,
+                  float2 st0  : TEXCOORD0,
+                  float4 stEW : TEXCOORD1,
+                  float4 stSN : TEXCOORD2,
+          uniform float tau,
+          uniform float lambda_tau,
+          uniform float4 dxdy,
+              out float4 uv_out : COLOR0)
+{
+   float2 warped = tex2D(warped_tex, st0).xy;
+   warped /= 255; // Normalize here to allow lower precision for the warped buffer
+   float r2 = warped.y*warped.y;
+
+   float const u = tex2D(u_src, st0);
+
+   float sum_q = 0.0f;
+
+   float2 const dx = dxdy.xy;
+   float2 const dy = dxdy.zw;
+
+   sum_q += tex2D(qh_tex, st0 - 0*dx).x;
+   sum_q += tex2D(qh_tex, st0 - 1*dx).y;
+   sum_q += tex2D(qh_tex, st0 - 2*dx).z;
+   sum_q += tex2D(qh_tex, st0 - 3*dx).w;
+
+   sum_q += tex2D(qv_tex, st0 - 0*dy).x;
+   sum_q += tex2D(qv_tex, st0 - 1*dy).y;
+   sum_q += tex2D(qv_tex, st0 - 2*dy).z;
+   sum_q += tex2D(qv_tex, st0 - 3*dy).w;
+
+   float U = u - tau*sum_q;
+
+   // new u and v
+   float b = dot(warped, float2(1, U));
+   float step = thresholdingStep(r2, b, lambda_tau);
+   U += step * warped.y;
+
+   uv_out.x = U;
+   uv_out.y = 0;
+   uv_out.z = 2*U - u;
+}

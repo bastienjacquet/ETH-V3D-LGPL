@@ -1,0 +1,25 @@
+void main(uniform sampler2D u_src : TEXUNIT0,
+          uniform sampler2D p_src : TEXUNIT1,
+          uniform sampler2D c_src : TEXUNIT2,
+          float2 st0  : TEXCOORD0,
+          float4 stWE : TEXCOORD1,
+          float4 stNS : TEXCOORD2,
+          uniform float tau,
+          out float u_out : COLOR0)
+{
+   float2 stW = stWE.xy;
+   float2 stN = stNS.xy;
+
+   float2 const p = tex2D(p_src, st0).xy;
+
+   bool const isLeftBorder  = (stW.x < 0);
+   bool const isTopBorder   = (stN.y < 0);
+
+   float const p_W = isLeftBorder ? 0.0f : tex2D(p_src, stW).x;
+   float const p_N = isTopBorder  ? 0.0f : tex2D(p_src, stN).y;
+   float const div_p = p.x - p_W + p.y - p_N;
+
+   float const c     = tex2D(c_src, st0).x;
+   float const u_old = tex2D(u_src, st0).x;
+   u_out = clamp(u_old - tau * (c - div_p), 0.0f, 1.0f);
+}

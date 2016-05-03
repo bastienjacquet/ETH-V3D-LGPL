@@ -1,0 +1,58 @@
+set (OBJEXT o)
+
+# Other optional libraries
+enable_feature (V3DLIB_ENABLE_LIBJPEG)
+enable_feature (V3DLIB_ENABLE_LIBPNG)
+#enable_feature (V3DLIB_ENABLE_OPENCV)
+
+enable_feature (V3DLIB_ENABLE_LIBEXIF)
+
+enable_feature (V3DLIB_ENABLE_FFMPEG)
+enable_feature (V3DLIB_ENABLE_FFMPEG_SWS_SCALING)
+enable_feature (V3DLIB_ENABLE_FFMPEG_VERSION_2009)
+enable_feature (V3DLIB_ENABLE_GPGPU)
+enable_feature (V3DLIB_ENABLE_SQLITE3)
+enable_feature (V3DLIB_ENABLE_ARPACK)
+
+enable_feature (V3DLIB_ENABLE_LPSOLVE)
+#enable_feature_libraries(V3DLIB_ENABLE_LPSOLVE lpsolve)
+
+enable_feature (V3DLIB_ENABLE_LIBDAI)
+enable_feature_libraries (V3DLIB_ENABLE_LIBDAI dai)
+
+#enable_feature (V3DLIB_ENABLE_DSDP)
+enable_feature_inc_path (V3DLIB_ENABLE_DSDP /usr/local/include/)
+
+enable_conditional_feature (V3DLIB_GPGPU_ENABLE_CG V3DLIB_ENABLE_GPGPU)
+enable_feature_libraries (V3DLIB_ENABLE_LIBJPEG jpeg)
+enable_feature_libraries (V3DLIB_ENABLE_LIBPNG png)
+enable_feature_libraries (V3DLIB_ENABLE_LIBEXIF exif)
+
+enable_feature_libraries (V3DLIB_ENABLE_GPGPU GLEW GLU GL)
+enable_feature_libraries (V3DLIB_GPGPU_ENABLE_CG Cg CgGL pthread)
+enable_feature_libraries (V3DLIB_ENABLE_OPENCV highgui cvaux cv)
+enable_feature_libraries (V3DLIB_ENABLE_FFMPEG avcodec avformat avcodec avutil)
+
+enable_feature (V3DLIB_ENABLE_CUDA)
+enable_feature_inc_path (V3DLIB_ENABLE_CUDA /usr/local/cuda/include)
+enable_feature_lib_path (V3DLIB_ENABLE_CUDA /usr/local/cuda/lib64)
+enable_feature_libraries (V3DLIB_ENABLE_CUDA cudart)
+
+enable_feature (V3DLIB_ENABLE_SUITESPARSE)
+enable_feature_inc_path (V3DLIB_ENABLE_SUITESPARSE /usr/include/suitesparse)
+#enable_feature_lib_path (V3DLIB_ENABLE_SUITESPARSE /usr/local/src/Devel/SuiteSparse/Lib)
+enable_feature_libraries (V3DLIB_ENABLE_SUITESPARSE colamd ldl)
+
+enable_feature (V3DLIB_ENABLE_SIFTGPU)
+enable_feature_inc_path (V3DLIB_ENABLE_SIFTGPU /usr/local/src/Vision/SiftGPU/src/SiftGPU)
+enable_feature_lib_path (V3DLIB_ENABLE_SIFTGPU /usr/local/src/Vision/SiftGPU/linux/bin)
+
+enable_feature (V3DLIB_ENABLE_VLFEAT)
+enable_feature_inc_path (V3DLIB_ENABLE_VLFEAT /usr/local/src/Vision/vlfeat-0.9.13)
+enable_feature_lib_path (V3DLIB_ENABLE_VLFEAT /usr/local/src/Vision/vlfeat-0.9.13/bin/glnxa64)
+
+enable_feature (V3DLIB_ENABLE_OPENCV)
+
+# Debug/release mode selection
+set (CMAKE_BUILD_TYPE Release)
+#set (CMAKE_BUILD_TYPE Debug)

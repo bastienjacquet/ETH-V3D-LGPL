@@ -1,0 +1,53 @@
+# Commented parameters are shown with default values
+
+# Common paramters used by several stages
+FOCAL_LENGTH 7036
+PPX 1308.64382979222
+PPY 913.497188672092
+IMAGE_WIDTH 2448
+IMAGE_HEIGHT 2048
+
+#========================================
+# match_using_voctree
+
+#WITH_BACKMATCHING yes
+#MATCHING_SCORE_RATIO 0.8
+#MATCHING_MAX_FEATURES 7168
+
+#MINIMUM_RAW_CORRESPONDENCES 100
+#MINIMUM_INLIER_CORRESPONDENCES $MINIMUM_RAW_CORRESPONDENCES
+#USE_EFFECTIVE_INLIERS yes
+
+#POTENTIAL_VIEWS_COUNT 20
+#VISUAL_WORD_MATCH_PROPABILITY 0.1
+
+#========================================
+# generate_triples
+
+#MINIMUM_CORRESPONDENCES_TRIPLET 0  # additional filter for two-view matches
+#MAX_REPROJECTION_ERROR_TRIPLET 1.0
+#REQUIRED_TRIPLET_POINTS 50
+#MIN_TRIANGULATION_ANGLE 5
+
+#========================================
+# generate_submodels
+
+#MAX_REPROJECTION_ERROR_SUBMODEL $MAX_REPROJECTION_ERROR_TRIPLET #reprojection error in pixel w.r.t. 1024xX pixel image (ie will be MAX_REPROJECTION_ERROR/1024*[max image dimension])
+#REQUIRED_TRIPLE_POINTS_SUBMODEL $REQUIRED_TRIPLET_POINTS
+#REQUIRED_VISIBLE_POINTS 30  # Minimal number of points visible in a view, such that that view is successfully registered
+#SUBMODEL_VIEW_FREQUENCY 10
+#SUBMODEL_MAX_SIZE 50
+#SUBMODEL_BUNDLE_ITERATIONS 10
+#MIN_FILTERED_POINT_COUNT_RATIO 0.75
+#FILTER_TRIPLET_CORRESPONDENCES yes   # generate a new set of pairwise feature matches from triplets
+
+#========================================
+# align_submodels
+#REQUIRED_ALIGNMENT_POINTS 500
+
+#========================================
+# reconstruct_from_submodels
+
+#USE_MST_UPGRADE yes
+#MAX_REPROJECTION_ERROR_RECONSTRUCT $MAX_REPROJECTION_ERROR_TRIPLET #reprojection error in pixel w.r.t. 1024xX pixel image
+#REQUIRED_ALIGNMENT_POINTS_RECONSTRUCT $REQUIRED_ALIGNMENT_POINTS

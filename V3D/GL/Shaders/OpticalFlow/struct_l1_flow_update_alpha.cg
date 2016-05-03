@@ -1,0 +1,52 @@
+void main(uniform sampler2D alphas_src : TEXUNIT0, // (alpha0_h, alpha0_v, alpha1_h, alpha1_v)
+          uniform sampler2D qh_tex     : TEXUNIT1,
+          uniform sampler2D qv_tex     : TEXUNIT2,
+          uniform sampler2D p_tex      : TEXUNIT3, // (p1_u, p1_v, p2_u, p2_v)
+          float2 st0   : TEXCOORD0,
+          float4 stEW  : TEXCOORD1,
+          float4 stSN  : TEXCOORD2,
+          uniform float  tau,
+          uniform float4 dict1h,
+          uniform float4 dict1v,
+          out float4 alphas_out : COLOR0,
+          out float4 betas_out : COLOR1)
+{
+   float2 stW = stEW.zw;
+   float2 stN = stSN.zw;
+
+   bool const isLeftBorder   = (stW.x < 0);
+   bool const isRightBorder  = (stEW.x > 1);
+   bool const isTopBorder    = (stN.y < 0);
+   bool const isBottomBorder = (stSN.y > 1);
+
+   float4 p   = tex2D(p_tex, st0);
+   float2 p_W = tex2D(p_tex, stW).xy;
+   float2 p_N = tex2D(p_tex, stN).zw;
+
+   p_W = isLeftBorder ? float2(0) : p_W;
+   p_N = isTopBorder ? float2(0) : p_N;
+   p.xy = isRightBorder ? float2(0) : p.xy;
+   p.zw = isBottomBorder ? float2(0) : p.zw;
+
+   float2 div_p = p.xy - p_W + p.zw - p_N;
+
+   float4 qh = tex2D(qh_tex, st0);
+   float4 qv = tex2D(qv_tex, st0);
+
+   float4 sum_q = float4(0);
+
+   sum_q.x = dot((1).xxxx, qh);
+   sum_q.y = dot((1).xxxx, qv);
+   sum_q.z = dot(dict1h, qh);
+   sum_q.w = dot(dict1v, qv);
+
+   float4 alpha = tex2D(alphas_src, st0);
+
+   float4 alpha_new = alpha + tau * sum_q;
+   alpha_new.zw += tau * div_p;
+
+   alpha_new = clamp(alpha_new, -100.0f, 100.0f);
+
+   alphas_out = alpha_new;
+   betas_out = 2*alpha_new - alpha;
+}

@@ -1,0 +1,66 @@
+float signum(float x)
+{
+   return (x < 0) ? -1 : 1;
+}
+
+void main(uniform sampler2D u_src : TEXTURE0,
+          uniform sampler2D I0_tex : TEXTURE1, // grayscale
+          uniform sampler2D I1_tex : TEXTURE2, // grayscale + Ix + Iy
+          float2 st0 : TEXCOORD0,
+          float3 st3 : TEXCOORD3, // Holds 1/w, 1/h, 2^level
+          out float4 color_out : COLOR)
+{
+   float const eps = 0.001f;
+   //float const eps = 0.1f;
+
+   float2 uv = float2(0);
+   uv.x = tex2D(u_src, st0).x;
+#if 0
+   float3 I0 = tex2D(I0_tex, st0);
+   float3 I1 = tex2D(I1_tex, st0 + st3.xy*uv);
+   //float3 I1 = tex2D(I1_tex, st0);
+   I1.yz *= st3.z;
+#else
+   float2 I0 = tex2D(I0_tex, st0).xy;
+   float2 I1 = tex2D(I1_tex, st0 + st3.xy*uv).xy;
+   I0.y *= st3.z;
+   I1.y *= st3.z;
+#endif
+
+#if 0
+   // Central differences
+   float2 const ds = float2(0.5, 0);
+   float I1grad;
+   I1grad = tex2D(I1_tex, st0 + st3.xy*(uv+ds)).x - tex2D(I1_tex, st0 + st3.xy*(uv-ds)).x;
+   I1.y = I1grad;
+#elif 0
+   // One sided forward differences
+   float2 const ds = float2(1, 0);
+   float I1grad;
+   I1grad = tex2D(I1_tex, st0 + st3.xy*(uv+ds)).x - I1.x;
+   I1.y = I1grad;
+#elif 0
+   // One sided backward differences
+   float2 const ds = float2(-1, 0);
+   float I1grad;
+   I1grad = I1.x - tex2D(I1_tex, st0 + st3.xy*(uv+ds)).x;
+   I1.y = I1grad;
+#elif 1
+   // Central differences and use gradients from both images
+   float2 const ds0 = float2(1, 0); // I0_tex has nearest texture filtering
+   float2 const ds = float2(0.5, 0);
+   float I0grad, I1grad;
+   I0grad = 0.5f * (tex2D(I0_tex, st0 + st3.xy*ds0).x - tex2D(I0_tex, st0 - st3.xy*ds0).x);
+   I1grad = tex2D(I1_tex, st0 + st3.xy*(uv+ds)).x - tex2D(I1_tex, st0 + st3.xy*(uv-ds)).x;
+   I1.y = 0.5f * (I0grad + I1grad);
+#elif 1
+   I1.y = 0.5f * (I1.y + I0.y);
+#endif
+
+   // Avoid zero gradients
+   I1.y = (abs(I1.y) < eps) ? (signum(I1.y) * eps) : I1.y;
+
+   color_out.x = I1.x - I1.y*uv.x - I0.x;
+   color_out.y = I1.y;
+   color_out.w = abs(I1.x-I0.x);
+}

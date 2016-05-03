@@ -1,0 +1,68 @@
+float3 huberDeriv(float3 x, float eps, float rcpEps)
+{
+   return (abs(x) >= eps) ? sign(x) : (x * rcpEps);
+}
+
+float3 projectOnSimplex(float3 v)
+{
+   // Project v on the canonical simplex.
+   half3 I = half3(1);
+
+   // First iteration:
+   v = v + (1.0 - dot(I, v))/3;
+   I = (v < 0) ? half3(0) : I;
+   v = max(v, float3(0));
+
+#if 0
+   // 2nd iteration:
+   v = v + (1.0 - dot(I, v))/(I.x + I.y + I.z);
+   I = (v < 0) ? half3(0) : I;
+   v = max(v, float3(0));
+
+   // 3nd iteration:
+   v = v + (1.0 - dot(I, v))/(I.x + I.y + I.z);
+#else
+   // 2nd iteration:
+   v = I ? (v + (1.0 - dot(I, v))/(I.x + I.y + I.z)) : v;
+   I = (v < 0) ? half3(0) : I;
+   v = max(v, float3(0));
+
+   // 3nd iteration:
+   v = I ? (v + (1.0 - dot(I, v))/(I.x + I.y + I.z)) : v;
+#endif
+
+   return v;
+}
+
+void main(uniform sampler2D u_src : TEXUNIT0,
+          uniform sampler2D c_src : TEXUNIT1,
+          float2 st0  : TEXCOORD0,
+          float4 stWE : TEXCOORD1,
+          float4 stNS : TEXCOORD2,
+          uniform float tau,
+          uniform float2 epsilon, // epsilon and 1/epsilon
+          out float3 u_out : COLOR0)
+{
+   float3 const c = tex2D(c_src, st0).xyz;
+
+   float2 stW = stWE.xy;
+   float2 stN = stNS.xy;
+   float2 stE = stWE.zw;
+   float2 stS = stNS.zw;
+
+   float3 const u   = tex2D(u_src, st0).xyz;
+   float3 const u_W = tex2D(u_src, stW).xyz;
+   float3 const u_N = tex2D(u_src, stN).xyz;
+   float3 const u_E = tex2D(u_src, stE).xyz;
+   float3 const u_S = tex2D(u_src, stS).xyz;
+
+   float3 du = c;
+   du += huberDeriv(u - u_W, epsilon.x, epsilon.y);
+   du += huberDeriv(u - u_N, epsilon.x, epsilon.y);
+   du += huberDeriv(u - u_E, epsilon.x, epsilon.y);
+   du += huberDeriv(u - u_S, epsilon.x, epsilon.y);
+
+   //float const lambda = 1.0f;
+   //u_out = (1.0f-lambda)*u + lambda*projectOnSimplex(u - tau*du);
+   u_out = projectOnSimplex(u - tau*du);
+}

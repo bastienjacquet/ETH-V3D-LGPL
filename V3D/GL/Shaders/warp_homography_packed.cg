@@ -1,0 +1,42 @@
+void main(uniform sampler2D src_tex : TEXUNIT0,
+          float3 st0 : TEXCOORD0,
+          float3 st1 : TEXCOORD1,
+          float3 st2 : TEXCOORD2,
+          float3 st3 : TEXCOORD3,
+          float4 defaultColor : TEXCOORD4,
+          out float4 color : COLOR)
+{
+#if 0
+   bool const inside0 = all(st0.xy >= 0) && all(st0.xy <= 1);
+   bool const inside1 = all(st1.xy >= 0) && all(st1.xy <= 1);
+   bool const inside2 = all(st2.xy >= 0) && all(st2.xy <= 1);
+   bool const inside3 = all(st3.xy >= 0) && all(st3.xy <= 1);
+
+   color.x = inside0 ? tex2Dproj(src_tex, st0).x : defaultColor.x;
+   color.y = inside1 ? tex2Dproj(src_tex, st1).x : defaultColor.y;
+   color.z = inside2 ? tex2Dproj(src_tex, st2).x : defaultColor.z;
+   color.w = inside3 ? tex2Dproj(src_tex, st3).x : defaultColor.w;
+#else
+   st0.xy /= st0.z;
+   st1.xy /= st1.z;
+   st2.xy /= st2.z;
+   st3.xy /= st3.z;
+
+# if 0
+   bool const inside0 = all(st0.xy >= 0) && all(st0.xy <= 1) && (st0.z > 0);
+   bool const inside1 = all(st1.xy >= 0) && all(st1.xy <= 1) && (st1.z > 0);
+   bool const inside2 = all(st2.xy >= 0) && all(st2.xy <= 1) && (st2.z > 0);
+   bool const inside3 = all(st3.xy >= 0) && all(st3.xy <= 1) && (st3.z > 0);
+# else
+   bool const inside0 = all(st0.xy >= 0) && all(st0.xy <= 1);
+   bool const inside1 = all(st1.xy >= 0) && all(st1.xy <= 1);
+   bool const inside2 = all(st2.xy >= 0) && all(st2.xy <= 1);
+   bool const inside3 = all(st3.xy >= 0) && all(st3.xy <= 1);
+# endif
+
+   color.x = inside0 ? tex2D(src_tex, st0.xy).x : defaultColor.x;
+   color.y = inside1 ? tex2D(src_tex, st1.xy).x : defaultColor.y;
+   color.z = inside2 ? tex2D(src_tex, st2.xy).x : defaultColor.z;
+   color.w = inside3 ? tex2D(src_tex, st3.xy).x : defaultColor.w;
+#endif
+}

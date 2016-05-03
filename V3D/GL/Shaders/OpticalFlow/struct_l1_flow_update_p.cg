@@ -1,0 +1,30 @@
+float2 tv(float4 uv_grad)
+{
+   return float2(length(uv_grad.xz), length(uv_grad.yw));
+}
+
+void main(uniform sampler2D alphas_src : TEXUNIT0, // (alpha0_h, alpha0_v, alpha1_h, alpha1_v)
+          uniform sampler2D p_src      : TEXUNIT1, // (p1_h, p1_v, p2_h, p2_v)
+                  float2 st0  : TEXCOORD0,
+                  float4 stEW : TEXCOORD1,
+                  float4 stSN : TEXCOORD2,
+          uniform float  tau,
+          uniform float  rcpEta,
+              out float4 p_out : COLOR0)
+{
+   float2 alpha = tex2D(alphas_src, st0).zw;
+   float4 alpha_ES = float4(0);
+   alpha_ES.xy = tex2D(alphas_src, stEW.xy).zw;
+   alpha_ES.zw = tex2D(alphas_src, stSN.xy).zw;
+
+   float4 p = tex2D(p_src, st0);
+
+   // The right clamping mode should handle the boundary conditions.
+   float4 alpha_grad = alpha_ES - alpha.xyxy;
+
+   p += tau * alpha_grad;
+
+   float2 denom = max(float2(1.0f), rcpEta * tv(p));
+   p /= denom.xyxy;
+   p_out = p;
+}

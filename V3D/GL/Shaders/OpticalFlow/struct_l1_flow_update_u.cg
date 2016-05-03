@@ -1,0 +1,66 @@
+float thresholdingStep(float a2, float b, float lambda)
+{
+   float lam_a2 = lambda * a2;
+   return (b + lam_a2 < 0) ? lambda : ((b - lam_a2 > 0) ? -lambda : (-b/a2));
+}
+
+void main(uniform sampler2D uv_src     : TEXUNIT0, // (u1, u2, v1, v2)
+          uniform sampler2D warped_tex : TEXUNIT1, // (c, Ix, Iy)
+          uniform sampler2D q1h_tex     : TEXUNIT2,
+          uniform sampler2D q1v_tex     : TEXUNIT3,
+          uniform sampler2D q2h_tex     : TEXUNIT4,
+          uniform sampler2D q2v_tex     : TEXUNIT5,
+                  float2 st0  : TEXCOORD0,
+                  float4 stEW : TEXCOORD1,
+                  float4 stSN : TEXCOORD2,
+          uniform float tau,
+          uniform float lambda_tau,
+          uniform float4 dxdy,
+              out float4 uv_out : COLOR0)
+{
+   float3 warped = tex2D(warped_tex, st0).xyz;
+   //warped.z = 0;
+   warped /= 255; // Normalize here to allow lower precision for the warped buffer
+   float r2 = dot(warped.yz, warped.yz);
+   //float r2 = warped.y*warped.y + warped.z*warped.z;
+
+   float2 const u = tex2D(uv_src, st0);
+
+   float2 sum_q = float2(0, 0);
+
+   float2 const dx = dxdy.xy;
+   float2 const dy = dxdy.zw;
+
+   sum_q.x += tex2D(q1h_tex, st0 - 0*dx).x;
+   sum_q.x += tex2D(q1h_tex, st0 - 1*dx).y;
+   sum_q.x += tex2D(q1h_tex, st0 - 2*dx).z;
+   sum_q.x += tex2D(q1h_tex, st0 - 3*dx).w;
+
+   sum_q.x += tex2D(q1v_tex, st0 - 0*dy).x;
+   sum_q.x += tex2D(q1v_tex, st0 - 1*dy).y;
+   sum_q.x += tex2D(q1v_tex, st0 - 2*dy).z;
+   sum_q.x += tex2D(q1v_tex, st0 - 3*dy).w;
+
+   sum_q.y += tex2D(q2h_tex, st0 - 0*dx).x;
+   sum_q.y += tex2D(q2h_tex, st0 - 1*dx).y;
+   sum_q.y += tex2D(q2h_tex, st0 - 2*dx).z;
+   sum_q.y += tex2D(q2h_tex, st0 - 3*dx).w;
+
+   sum_q.y += tex2D(q2v_tex, st0 - 0*dy).x;
+   sum_q.y += tex2D(q2v_tex, st0 - 1*dy).y;
+   sum_q.y += tex2D(q2v_tex, st0 - 2*dy).z;
+   sum_q.y += tex2D(q2v_tex, st0 - 3*dy).w;
+
+   float2 U = u - tau*sum_q;
+
+   // new u and v
+   float b = dot(warped, float3(1, U));
+   float step = thresholdingStep(r2, b, lambda_tau);
+   U += step * warped.yz;
+
+   uv_out.xy = U;
+   uv_out.zw = 2*U - u;
+
+   //uv_out.xz = 0; // set x-component of flow to 0
+   //uv_out.yw = 0; // set y-component of flow to 0
+}

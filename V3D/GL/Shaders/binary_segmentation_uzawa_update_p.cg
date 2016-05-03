@@ -1,0 +1,26 @@
+void main(uniform sampler2D u_src : TEXUNIT0,
+          uniform sampler2D p_src : TEXUNIT1,
+          uniform sampler2D weights_src : TEXUNIT3,
+          float2 st0  : TEXCOORD0,
+          float4 stWE : TEXCOORD1,
+          float4 stNS : TEXCOORD2,
+          uniform float tau,
+          out float2 p_out : COLOR0)
+{
+   float const u   = tex2D(u_src, st0).x;
+   float const u_E = tex2D(u_src, stWE.zw).x;
+   float const u_S = tex2D(u_src, stNS.zw).x;
+   float2 const weights = tex2D(weights_src, st0).xy;
+
+   float2 const grad_u = float2(u_E - u, u_S - u);
+
+   float2 p = tex2D(p_src, st0).xy;
+   p += tau * grad_u;
+
+#if 1
+   p_out = clamp(p, -weights, weights);
+#else
+   float const denom = max(1.0f, length(p));
+   p_out = p / denom;
+#endif
+}

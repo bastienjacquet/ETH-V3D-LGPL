@@ -1,0 +1,33 @@
+void main(uniform sampler2D q_src      : TEXUNIT0,
+          uniform sampler2D u_tex      : TEXUNIT1,
+          uniform sampler2D alphas_tex : TEXUNIT2, // (alpha0_h, alpha0_v, alpha1_h, alpha1_v)
+          float2 st0        : TEXCOORD0,
+          float2 u_mask     : TEXCOORD3, // which one to select, u1 or u2
+          float2 alpha_mask : TEXCOORD4, // Which one to select, horizontal or vertical
+          float4 dict1      : TEXCOORD5,
+          uniform float  tau,
+          uniform float  mu,
+          uniform float4 dxdy,
+              out float4 q_out : COLOR0)
+{
+   float4 q = tex2D(q_src, st0);
+
+   float2 dt = float2(0);
+   dt.x = dot(alpha_mask, dxdy.xz); // dx or dy from dxdy
+   dt.y = dot(alpha_mask, dxdy.yw);
+
+   float4 u = float4(0);
+   u.x = dot(u_mask, tex2D(u_tex, st0 + 0*dt).zw);
+   u.y = dot(u_mask, tex2D(u_tex, st0 + 1*dt).zw);
+   u.z = dot(u_mask, tex2D(u_tex, st0 + 2*dt).zw);
+   u.w = dot(u_mask, tex2D(u_tex, st0 + 3*dt).zw);
+
+   float4 alphas = tex2D(alphas_tex, st0);
+   float2 alpha01 = float2(0);
+   alpha01.x = dot(alpha_mask, alphas.xy);
+   alpha01.y = dot(alpha_mask, alphas.zw);
+
+   float4 uu = alpha01.xxxx + dict1*alpha01.yyyy;
+   q += tau * (u - uu);
+   q_out = clamp(q, -mu.xxxx, mu.xxxx);
+}
